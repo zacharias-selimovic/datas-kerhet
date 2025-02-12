@@ -7,7 +7,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 //My comment: Max
-
+// morgan
 public class server implements Runnable {
   private ServerSocket serverSocket = null;
   private static int numConnectedClients = 0;
