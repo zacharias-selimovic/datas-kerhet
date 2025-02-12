@@ -6,6 +6,7 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+//My comment: Max
 
 public class server implements Runnable {
   private ServerSocket serverSocket = null;
