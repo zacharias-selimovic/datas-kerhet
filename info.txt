@@ -10,3 +10,8 @@ server.crt är serverns public certificate vilket kommer inehålla public nyckel
 verfiera att servern är trusted.
 
 server_signed.crt är signerat certifikat av CA.
+
+server-truststore är också en "keystore" som inehåller certifikat vi kan lita på, i detta fall ca-cert.pem. lösenordet är:
+serverpassword
+
+client.keystore för "keystore" med dem olika clienterna (doctor, nurse osv) lösenord: clientpassword

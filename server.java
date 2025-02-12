@@ -91,12 +91,12 @@ public class server implements Runnable {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         KeyStore ks = KeyStore.getInstance("JKS");
         KeyStore ts = KeyStore.getInstance("JKS");
-        char[] password = "password".toCharArray();
+        char[] password = "serverpassword".toCharArray();
         // keystore password (storepass)
         System.out.println("Now using TLS! ");
-        ks.load(new FileInputStream("serverkeystore"), password);  
+        ks.load(new FileInputStream("server.keystore"), password);  
         // truststore password (storepass)
-        ts.load(new FileInputStream("servertruststore"), password); 
+        ts.load(new FileInputStream("server-truststore"), password); 
         kmf.init(ks, password); // certificate password (keypass)
         tmf.init(ts);  // possible to use keystore as truststore here
         ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
