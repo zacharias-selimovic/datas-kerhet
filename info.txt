@@ -1,0 +1,17 @@
+ca-key.pem är private key för CA, RSA algoritm, aes256 kryptering
+password: är "password" XD
+
+ca-cert är self signed CA CERTIFICATE, sha-256 för hashing, common name: Hospital-CA använde ca-key.pem som private key
+
+server.keystore har serverns två nycklar, algoritm =  RSA, keysize = 2048, 10 år validity.
+lösenordet till serverkeystore är serverpassword
+
+server.crt är serverns public certificate vilket kommer inehålla public nyckeln och en signatur från CA för att
+verfiera att servern är trusted.
+
+server_signed.crt är signerat certifikat av CA.
+
+server-truststore är också en "keystore" som inehåller certifikat vi kan lita på, i detta fall ca-cert.pem. lösenordet är:
+serverpassword
+
+client.keystore för "keystore" med dem olika clienterna (doctor, nurse osv) lösenord: clientpassword
