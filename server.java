@@ -6,16 +6,29 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 //My comment: Max
 // morgan
 public class server implements Runnable {
   private ServerSocket serverSocket = null;
   private static int numConnectedClients = 0;
+  private List<Record> records;
   
   public server(ServerSocket ss) throws IOException {
     serverSocket = ss;
     newListener();
+    this.records = new ArrayList<>();
+    records.add(new Record("doctor1", "nurse1", "patient1")); // try to add a record to "database"
   }
+
+  private String extractField(String dn, String fieldName) {
+        Pattern pattern = Pattern.compile(fieldName + "=([^,]+)");
+        Matcher matcher = pattern.matcher(dn);
+        return matcher.find() ? matcher.group(1) : null;
+    }
 
   public void run() {
     try {
@@ -32,7 +45,11 @@ public class server implements Runnable {
       System.out.println("Serial number " + serialNumber);
       System.out.println("client name (cert subject DN field): " + subject);
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
+      System.out.println("Will try to read the records in database that client can access!");
 
+      System.out.println("Record content: " + records.get(0).read(extractField(subject, "OU"), extractField(subject, "CN")));
+      //IT WORKS
+      
       PrintWriter out = null;
       BufferedReader in = null;
       out = new PrintWriter(socket.getOutputStream(), true);
