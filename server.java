@@ -22,6 +22,8 @@ public class server implements Runnable {
     newListener();
     this.records = new ArrayList<>();
     records.add(new Record("doctor1", "nurse1", "patient1")); // try to add a record to "database"
+    records.add(new Record("doctor2", "nurse1", "patient2")); // try to add a record to "database"
+
   }
 
   private String extractField(String dn, String fieldName) {
@@ -45,9 +47,9 @@ public class server implements Runnable {
       System.out.println("Serial number " + serialNumber);
       System.out.println("client name (cert subject DN field): " + subject);
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
-      System.out.println("Will try to read the records in database that client can access!");
+      //System.out.println("Will try to read the records in database that client can access!");
 
-      System.out.println("Record content: " + records.get(0).read(extractField(subject, "OU"), extractField(subject, "CN")));
+      //System.out.println("Record content: " + records.get(0).read(extractField(subject, "OU"), extractField(subject, "CN")));
       //IT WORKS
       
       PrintWriter out = null;
@@ -57,10 +59,16 @@ public class server implements Runnable {
 
       String clientMsg = null;
       while ((clientMsg = in.readLine()) != null) {
-        String rev = new StringBuilder(clientMsg).reverse().toString();
+        String toSend = "";
+        if(clientMsg.equals("read")){
+          String content1 = records.get(1).read(extractField(subject, "OU"), extractField(subject, "CN"));
+          System.out.println("content1 "+ content1);
+          toSend = content1;
+        }
         System.out.println("received '" + clientMsg + "' from client");
-        System.out.print("sending '" + rev + "' to client...");
-        out.println(rev);
+
+        System.out.print("sending '" + toSend + "' to client...");
+        out.println(toSend);
         out.flush();
         System.out.println("done\n");
       }
@@ -110,7 +118,6 @@ public class server implements Runnable {
         KeyStore ts = KeyStore.getInstance("JKS");
         char[] password = "serverpassword".toCharArray();
         // keystore password (storepass)
-        System.out.println("Now using TLS! ");
         ks.load(new FileInputStream("server.keystore"), password);  
         // truststore password (storepass)
         ts.load(new FileInputStream("server-truststore"), password); 

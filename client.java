@@ -4,6 +4,7 @@ import javax.net.ssl.*;
 
 import java.security.KeyStore;
 import java.security.cert.*;
+import java.security.spec.ECFieldF2m;
 
 /*
  * This example shows how to set up a key manager to perform client
@@ -36,19 +37,30 @@ public class client {
     try {
       SSLSocketFactory factory = null;
       try {
-        char[] password = "clientpassword".toCharArray();
+        System.out.println("--Hospital login--");
+        System.out.println("Enter username: ");
+        String name = System.console().readLine();
+        System.out.println("Enter password: ");
+        char[] password = System.console().readPassword();
+
+
+        //char[] password = "clientpassword".toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
         KeyStore ts = KeyStore.getInstance("JKS");
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         SSLContext ctx = SSLContext.getInstance("TLSv1.2");
         // keystore password (storepass)
-        ks.load(new FileInputStream("client.keystore"), password);  
-        // truststore password (storepass);
-        ts.load(new FileInputStream("client-truststore"), password); 
-        kmf.init(ks, password); // user password (keypass)
-        tmf.init(ts); // keystore can be used as truststore here
-        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        try{
+          ks.load(new FileInputStream(name + ".keystore"), password);  
+          // truststore password (storepass);
+          ts.load(new FileInputStream(name + ".truststore"), password); 
+          kmf.init(ks, password); // user password (keypass)
+          tmf.init(ts); // keystore can be used as truststore here
+          ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        } catch (Exception e){
+          System.out.println("Wrong pass or username");
+        }
         factory = ctx.getSocketFactory();
       } catch (Exception e) {
         throw new IOException(e.getMessage());
@@ -75,7 +87,7 @@ public class client {
       System.out.println("Serial number " + serialNumber);
       System.out.println("socket after handshake:\n" + socket + "\n");
       System.out.println("secure connection established\n\n");
-
+      System.out.println("Creating records from terminal not finished. type read to read this doctors records");
       BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
       PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

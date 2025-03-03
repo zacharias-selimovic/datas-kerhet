@@ -15,3 +15,5 @@ server-truststore är också en "keystore" som inehåller certifikat vi kan lita
 serverpassword
 
 client.keystore för "keystore" med dem olika clienterna (doctor, nurse osv) lösenord: clientpassword
+
+Okej nvm, nu har alla doctorer, nurses, patienter egna keystores såklart. Allas lösenord är: pass123
