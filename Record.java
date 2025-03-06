@@ -37,10 +37,23 @@ public class Record {
                     return null;
                 }
             case "Authority" :
-                return "UNLIMITED ACCESS";
+                return this.content;
             default :
                 return "Unknown organization! get out";
 
+        }
+    }
+    
+    public String write(String OU, String CN, String edit){
+        if(OU.equals("Doctor")){
+            if(CN.equals(this.doctorCN)){
+                this.content += edit;
+                return "Successfully written";
+            } else {
+                return "You dont have permission to do this";
+            }
+        } else {
+            return "You dont have permission to do this";
         }
     }
 
