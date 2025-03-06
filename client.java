@@ -106,7 +106,7 @@ public class client {
         out.println(msg);
         out.flush();
         System.out.println("done");
-        System.out.println( in.readLine() + "\n");
+        System.out.println( in.readLine());
       }
       in.close();
       out.close();

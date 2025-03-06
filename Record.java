@@ -47,7 +47,7 @@ public class Record {
     public String write(String OU, String CN, String edit){
         if(OU.equals("Doctor")){
             if(CN.equals(this.doctorCN)){
-                this.content += edit;
+                this.content += (" " + edit);
                 return "Successfully written";
             } else {
                 return "You dont have permission to do this";

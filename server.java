@@ -93,40 +93,89 @@ public class server implements Runnable {
       //Client MSG LOOP
       while ((clientMsg = in.readLine()) != null) {
         String toSend = "";
-        if (clientMsg.matches("read (\\d+)")) {
-          int recordNumber = Integer.parseInt(clientMsg.replaceAll("read (\\d+)", "$1"));
-          if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
-            String content1 = clientRecords.get(recordNumber - 1).read(extractField(subject, "OU"), extractField(subject, "CN"));
-            System.out.println("Record content: "+ content1);
-            toSend = content1;
-          } else {
-            toSend = "Invalid record number!";
-          }
-        } 
-        if (clientMsg.matches("edit (\\d+) (.+)")) {
-          Pattern pattern = Pattern.compile("edit (\\d+) (.+)");
-          Matcher matcher = pattern.matcher(clientMsg);
-          if (matcher.matches()) {
-            int recordNumber = Integer.parseInt(matcher.group(1));
-            String editMsg = matcher.group(2);
-            if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
-              String content1 = clientRecords.get(recordNumber - 1).write(extractField(subject, "OU"), extractField(subject, "CN"), editMsg);
-              System.out.println("Record content: "+ content1);
-              toSend = content1;
-            } else {
-              toSend = "Invalid record number!";
-            }
-          }
-        } else if(toSend.equals("")){
-            toSend = "Invalid command!";
-        }
-        System.out.println("received '" + clientMsg + "' from client");
+        String[] commandParts = clientMsg.split(" ", 2);
+        String command = commandParts[0].toLowerCase();
+    
+        switch (command) {
+            case "read" :
+                if (clientMsg.matches("read (\\d+)")) {
+                    int recordNumber = Integer.parseInt(clientMsg.replaceAll("read (\\d+)", "$1"));
+                    if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+                        String content = clientRecords.get(recordNumber - 1).read(
+                            extractField(subject, "OU"),
+                            extractField(subject, "CN")
+                        );
+                        System.out.println("Record content: " + content);
+                        toSend = content;
+                    } else {
+                        toSend = "Invalid record number!";
+                    }
+                }
+                break;
 
-        System.out.print("sending '" + toSend + "' to client...");
+            case "edit" :
+                if (clientMsg.matches("edit (\\d+) (.+)")) {
+                    Pattern pattern = Pattern.compile("edit (\\d+) (.+)");
+                    Matcher matcher = pattern.matcher(clientMsg);
+                    if (matcher.matches()) {
+                        int recordNumber = Integer.parseInt(matcher.group(1));
+                        String editMsg = matcher.group(2);
+                        if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+                            String content = clientRecords.get(recordNumber - 1).write(
+                                extractField(subject, "OU"),
+                                extractField(subject, "CN"),
+                                editMsg
+                            );
+                            System.out.println("Record content: " + content);
+                            toSend = content;
+                        } else {
+                            toSend = "Invalid record number!";
+                        }
+                    }
+                }
+                break;
+
+            case "add" :
+                if (clientMsg.matches("add \"([^\"]+)\" \"([^\"]+)\"")) {
+                    Pattern pattern = Pattern.compile("add \"([^\"]+)\" \"([^\"]+)\"");
+                    Matcher matcher = pattern.matcher(clientMsg);
+                    if (matcher.matches()) {
+                        String nurseCN = matcher.group(1);
+                        String patientCN = matcher.group(2);
+                        clientRecords.add(new Record(extractField(subject, "CN"),nurseCN, patientCN));
+                        toSend = "Record added successfully. You know have " + (records.size()) + " records to operate on";
+                    }
+                } else {
+                    toSend = "Invalid add command! Use: add \"nurseCN\" \"patientCN\"";
+                }
+                break;
+
+            case "remove" :
+                if (clientMsg.matches("remove (\\d+)")) {
+                    int recordNumber = Integer.parseInt(clientMsg.replaceAll("remove (\\d+)", "$1"));
+                    if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+                        clientRecords.remove(recordNumber - 1);
+                        toSend = "Record removed successfully.";
+                    } else {
+                        toSend = "Invalid record number!";
+                    }
+                } else {
+                    toSend = "Invalid remove command! Use: remove (number)";
+                }
+                break;
+    
+            default : if(toSend.equals("")){
+              toSend = "Invalid command!";
+            }
+            break;
+        }
+    
+        System.out.println("Received '" + clientMsg + "' from client");
+        System.out.print("Sending '" + toSend + "' to client...");
         out.println(toSend);
         out.flush();
         System.out.println("done\n");
-      }
+    }
       in.close();
       out.close();
       socket.close();
@@ -147,11 +196,13 @@ public class server implements Runnable {
     System.out.println("Sending welcome message to client");
     List<Record> records = subjectRecords(CN, OU);
     if(OU.equals("Doctor")){
-      out.println("Welcome " + CN + " type 'read 1-10' to read records, edit 1-10 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
+      out.println("Welcome " + CN + " type 'read 1-"+ records.size() + "' to read records, edit 1-" + records.size() +  " 'edit message' to edit records, type 'add 'nurseCN' 'patientCN' to add new record, q to quit" + " You have " + records.size() +  " Records to operate on");
     } else if(OU.equals("Nurse")){
-      out.println("Welcome " + CN + " type 'read 1-10' to read records, edit 1-10 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
+      out.println("Welcome " + CN + " type 'read 1-"+ records.size() + "' to read records, edit 1-" + records.size() + " 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
+    } else if(OU.equals("Authority")){
+      out.println("Welcome " + CN + " type 'read 1-"+ records.size() + "' to read records, remove 1-" + records.size() + " to remove records, q to quit" + " You have " + records.size() +  " Records to operate on");
     } else {
-      out.println("Welcome " + CN + " type 'read 1-10' to read records, q to quit :: " + " You have " + records.size() + " Records to read");
+      out.println("Welcome " + CN + " type 'read 1-" + records.size() +  "' to read records, q to quit :: " + " You have " + records.size() + " Records to read");
     }
     out.flush();
   }

@@ -14,6 +14,6 @@ server_signed.crt är signerat certifikat av CA.
 server-truststore är också en "keystore" som inehåller certifikat vi kan lita på, i detta fall ca-cert.pem. lösenordet är:
 serverpassword
 
-client.keystore för "keystore" med dem olika clienterna (doctor, nurse osv) lösenord: clientpassword
+client.keystore för "keystore" lösenord: clientpassword
 
 Okej nvm, nu har alla doctorer, nurses, patienter egna keystores såklart. Allas lösenord är: pass123
