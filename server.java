@@ -23,7 +23,7 @@ public class server implements Runnable {
     this.records = new ArrayList<>();
     records.add(new Record("doctor1", "nurse1", "patient1")); // try to add a record to "database"
     records.add(new Record("doctor2", "nurse1", "patient2")); // try to add a record to "database"
-
+    records.add(new Record("doctor2", "nurse1", "patient1")); // try to add a record to "database"
   }
 
   private String extractField(String dn, String fieldName) {
@@ -31,6 +31,37 @@ public class server implements Runnable {
         Matcher matcher = pattern.matcher(dn);
         return matcher.find() ? matcher.group(1) : null;
     }
+  
+  private List<Record> subjectRecords(String CN, String OU){
+    if(OU.equals("Authority")){
+      return this.records;
+    } else {
+      ArrayList<Record> partialList = new ArrayList<>();
+      switch(OU){
+        case "Doctor" : 
+          for (Record r : this.records){
+            if(r.doctorCN.equals(CN)){
+              partialList.add(r);
+            }
+          }
+        case "Nurse" :
+          for (Record r : this.records){
+            if(r.nurseCN.equals(CN)){
+              partialList.add(r);
+            }
+          }
+        case "Patient" : 
+          for (Record r : this.records){
+            if(r.patientCN.equals(CN)){
+              partialList.add(r);
+            }
+        }
+        default :
+          return partialList;
+      }
+    }
+
+  }
 
   public void run() {
     try {
@@ -56,14 +87,38 @@ public class server implements Runnable {
       BufferedReader in = null;
       out = new PrintWriter(socket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
       String clientMsg = null;
+      List<Record> clientRecords = subjectRecords(extractField(subject, "CN"), extractField(subject, "OU"));
+      welcomeMsg(out, extractField(subject, "CN"), extractField(subject, "OU"));
+      //Client MSG LOOP
       while ((clientMsg = in.readLine()) != null) {
         String toSend = "";
-        if(clientMsg.equals("read")){
-          String content1 = records.get(1).read(extractField(subject, "OU"), extractField(subject, "CN"));
-          System.out.println("content1 "+ content1);
-          toSend = content1;
+        if (clientMsg.matches("read (\\d+)")) {
+          int recordNumber = Integer.parseInt(clientMsg.replaceAll("read (\\d+)", "$1"));
+          if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+            String content1 = clientRecords.get(recordNumber - 1).read(extractField(subject, "OU"), extractField(subject, "CN"));
+            System.out.println("Record content: "+ content1);
+            toSend = content1;
+          } else {
+            toSend = "Invalid record number!";
+          }
+        } 
+        if (clientMsg.matches("edit (\\d+) (.+)")) {
+          Pattern pattern = Pattern.compile("edit (\\d+) (.+)");
+          Matcher matcher = pattern.matcher(clientMsg);
+          if (matcher.matches()) {
+            int recordNumber = Integer.parseInt(matcher.group(1));
+            String editMsg = matcher.group(2);
+            if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+              String content1 = clientRecords.get(recordNumber - 1).write(extractField(subject, "OU"), extractField(subject, "CN"), editMsg);
+              System.out.println("Record content: "+ content1);
+              toSend = content1;
+            } else {
+              toSend = "Invalid record number!";
+            }
+          }
+        } else if(toSend.equals("")){
+            toSend = "Invalid command!";
         }
         System.out.println("received '" + clientMsg + "' from client");
 
@@ -86,6 +141,17 @@ public class server implements Runnable {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+
+  private void welcomeMsg(PrintWriter out, String CN, String OU){
+    System.out.println("Sending welcome message to client");
+    List<Record> records = subjectRecords(CN, OU);
+    if(OU.equals("Doctor")){
+      out.println("Welcome " + CN + " type 'read 1-10' to read records, edit 1-10 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
+    } else {
+      out.println("Welcome " + CN + " type 'read 1-10' to read records, q to quit :: " + " You have " + records.size() + " Records to read");
+    }
+    out.flush();
   }
   
   private void newListener() { (new Thread(this)).start(); } // calls run()

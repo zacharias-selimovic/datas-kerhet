@@ -1,8 +1,8 @@
 
 public class Record {
     private String content;
-    private String doctorCN; //The CN of the doctor that created the record
-    private String nurseCN; //The CN of the nurse
+    public String doctorCN; //The CN of the doctor that created the record
+    public String nurseCN; //The CN of the nurse
     public String patientCN; // The CN of the patient
 
     public Record(String doctorCN, String nurseCN, String patientCN){

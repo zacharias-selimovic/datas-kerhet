@@ -87,15 +87,19 @@ public class client {
       System.out.println("Serial number " + serialNumber);
       System.out.println("socket after handshake:\n" + socket + "\n");
       System.out.println("secure connection established\n\n");
-      System.out.println("Creating records from terminal not finished. type read to read this doctors records");
+      //System.out.println("Creating records from terminal not finished. type read to read this doctors records");
+      
       BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
       PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+      //read welcome msg
+      System.out.println(in.readLine());
+
       String msg;
       for (;;) {
         System.out.print(">");
         msg = read.readLine();
-        if (msg.equalsIgnoreCase("quit")) {
+        if (msg.equalsIgnoreCase("q")) {
           break;
         }
         System.out.print("sending '" + msg + "' to server...");
