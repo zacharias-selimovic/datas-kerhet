@@ -148,6 +148,8 @@ public class server implements Runnable {
     List<Record> records = subjectRecords(CN, OU);
     if(OU.equals("Doctor")){
       out.println("Welcome " + CN + " type 'read 1-10' to read records, edit 1-10 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
+    } else if(OU.equals("Nurse")){
+      out.println("Welcome " + CN + " type 'read 1-10' to read records, edit 1-10 'edit message' to edit records, q to quit" + " You have " + records.size() +  " Records to operate on");
     } else {
       out.println("Welcome " + CN + " type 'read 1-10' to read records, q to quit :: " + " You have " + records.size() + " Records to read");
     }

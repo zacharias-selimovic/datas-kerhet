@@ -9,7 +9,7 @@ public class Record {
         this.doctorCN = doctorCN;
         this.nurseCN = nurseCN;
         this.patientCN = patientCN;
-        this.content = RandomSentenceGenerator.generateRandomSentence();
+        this.content = "Doctor: " + doctorCN + " Nurse: " + nurseCN +  " Patient: " + patientCN + " Content: " + RandomSentenceGenerator.generateRandomSentence();
     }
 
     public String read(String readerOU, String readerCN){
