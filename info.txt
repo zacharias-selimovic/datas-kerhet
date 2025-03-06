@@ -17,3 +17,5 @@ serverpassword
 client.keystore för "keystore" lösenord: clientpassword
 
 Okej nvm, nu har alla doctorer, nurses, patienter egna keystores såklart. Allas lösenord är: pass123
+
+Authoritys alias är authority
