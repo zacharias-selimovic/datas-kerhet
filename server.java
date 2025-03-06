@@ -16,11 +16,13 @@ public class server implements Runnable {
   private ServerSocket serverSocket = null;
   private static int numConnectedClients = 0;
   private List<Record> records;
+  private Logger logger;
   
   public server(ServerSocket ss) throws IOException {
     serverSocket = ss;
     newListener();
     this.records = new ArrayList<>();
+    this.logger = new Logger();
     records.add(new Record("doctor1", "nurse1", "patient1")); // try to add a record to "database"
     records.add(new Record("doctor2", "nurse1", "patient2")); // try to add a record to "database"
     records.add(new Record("doctor2", "nurse1", "patient1")); // try to add a record to "database"
@@ -73,6 +75,7 @@ public class server implements Runnable {
       String issuer = ((X509Certificate) cert[0]).getIssuerX500Principal().getName();
       String serialNumber = ((X509Certificate) cert[0]).getSerialNumber().toString();
       numConnectedClients++;
+      logger.writeLog(extractField(subject, "CN") + " Logged in");
       System.out.println("client connected");
       System.out.println("Issuer: " + issuer);
       System.out.println("Serial number " + serialNumber);
@@ -107,6 +110,7 @@ public class server implements Runnable {
                         );
                         System.out.println("Record content: " + content);
                         toSend = content;
+                        logger.writeLog(extractField(subject, "CN") + " read " + clientRecords.get(recordNumber - 1).patientCN + "'s record");
                     } else {
                         toSend = "Invalid record number!";
                     }
@@ -127,6 +131,7 @@ public class server implements Runnable {
                                 editMsg
                             );
                             System.out.println("Record content: " + content);
+                            logger.writeLog(extractField(subject, "CN") + " edited " + clientRecords.get(recordNumber - 1).patientCN + "'s record");
                             toSend = content;
                         } else {
                             toSend = "Invalid record number!";
@@ -143,6 +148,7 @@ public class server implements Runnable {
                         String nurseCN = matcher.group(1);
                         String patientCN = matcher.group(2);
                         clientRecords.add(new Record(extractField(subject, "CN"),nurseCN, patientCN));
+                        logger.writeLog(extractField(subject, "CN") + " Added a new record to " + patientCN + "with " + nurseCN);
                         toSend = "Record added successfully. You know have " + (records.size()) + " records to operate on";
                     }
                 } else {
@@ -153,9 +159,16 @@ public class server implements Runnable {
             case "remove" :
                 if (clientMsg.matches("remove (\\d+)")) {
                     int recordNumber = Integer.parseInt(clientMsg.replaceAll("remove (\\d+)", "$1"));
+                    if(!extractField(subject, "OU").equals("Authority")){
+                      toSend = "You cant do that";
+                      break;
+                    }
                     if (recordNumber > 0 && recordNumber <= clientRecords.size()) {
+                        String removedRecordPatientCN = clientRecords.get(recordNumber - 1).patientCN;
                         clientRecords.remove(recordNumber - 1);
                         toSend = "Record removed successfully.";
+                        logger.writeLog(extractField(subject, "CN") + "Removed " + removedRecordPatientCN + "'s record");
+
                     } else {
                         toSend = "Invalid record number!";
                     }
